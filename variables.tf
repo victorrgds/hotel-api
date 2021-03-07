@@ -24,7 +24,7 @@ variable "tags" {
         "Name" = "datadog-lab"
         "ScheduledStartStop" = "True"
         "owner" = "Victor"
-        "env" = "technical-exercise"
+        "env" = "<insert your env>"
         
     }
 }
