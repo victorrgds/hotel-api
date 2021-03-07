@@ -44,8 +44,8 @@ services:
       DD_APM_NON_LOCAL_TRAFFIC: "true"
       DD_LOGS_ENABLED: "true"
       DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
-      DD_HOSTNAME: "datadog-victor"
-      DD_ENV: "technical-exercise"
+      DD_HOSTNAME: "<insert your hostname>"
+      DD_ENV: "<insert your env>"
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
