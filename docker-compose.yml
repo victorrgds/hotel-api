@@ -1,0 +1,57 @@
+version: '3.1'
+services:
+  web:
+    build: web/
+    command: pip install -r requirements.txt
+    command: ddtrace-run python app.py
+    environment:
+      DD_SERVICE: "flask"
+      DD_AGENT_HOST: "datadog"
+    links:
+      - mysql
+    ports:
+      - "5050:5050"
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: "admin"
+      MYSQL_PASSWORD: "datadog"
+      MYSQL_USER: "test"
+      MYSQL_DATABASE: "test"
+    labels:
+      com.datadoghq.ad.check_names: '["mysql"]'
+      com.datadoghq.ad.init_configs: '[{}]'
+      com.datadoghq.ad.instances: '{"server": "mysql", "user": "datadog","pass": "datadog"}'
+    ports:
+      - "127.0.0.1:3306:3306"
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ./datadog/init.sql:/data/application/init.sql
+
+      # agent section
+  datadog:
+    image: "gcr.io/datadoghq/agent:7"
+    links:
+     - mysql
+     - web
+    environment:
+      DD_API_KEY: "9188be29f3f36868deeb11865280b24f"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+      DD_SITE: "datadoghq.com"
+      DD_TRACE_ENABLED: "true"
+      DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_HOSTNAME: "datadog-victor"
+      DD_ENV: "technical-exercise"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+      - ./datadog/conf.d/mysql.yaml:/etc/datadog-agent/conf.d/mysql.d/conf.yaml
+      - ./datadog/conf.d/custom_check.yaml:/etc/datadog-agent/conf.d/customcheck.yaml
+      - ./datadog/checks.d/custom_check.py:/etc/datadog-agent/checks.d/customcheck.py
